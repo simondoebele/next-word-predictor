@@ -2,6 +2,7 @@ from typing import List, Tuple
 from nltk import FreqDist
 from nltk.util import ngrams 
 from nltk.tokenize import RegexpTokenizer
+import pickle
 
 import os
 
@@ -15,7 +16,7 @@ class FilterableDict(FreqDist):
 
     def predict(self, words: List[str], first_characters: str = '') -> List[Tuple[str, int]]:
 
-        assert len(words) == self.n_gram_model - 1
+        assert len(words) == self.n_gram_model - 1, 'The number of words must be one unit lower than the n-gram'
 
         filtered = list(
             filter(
@@ -28,6 +29,14 @@ class FilterableDict(FreqDist):
         sublist.sort(key = lambda y: y[1], reverse = True)
 
         return sublist
+
+    def save(self, filename: str) -> None:
+
+        file = open(f"{filename}.pkl", "wb")
+        pickle.dump([*self.items()], file)
+        file.close()
+
+        print(f'Data saved in {filename}.pkl')
 
 class nGramProcessor():
 
@@ -57,5 +66,14 @@ class nGramProcessor():
 
             textfile.close()
 
-model = nGramProcessor(3, FILES)
-print(model.frequencies.predict(['see', 'you'], 'l'))
+    def save(self, filename: str) -> None: self.frequencies.save(filename)
+
+def load(filename: str) -> FilterableDict:
+
+    with open(filename + '.pkl', 'rb') as file: data = pickle.load(file)
+
+    n_gram_model = len(data[0][0])    
+    return FilterableDict(n_gram_model, dict(data))
+
+data = load('./processed_n_grams/2-gram')
+print(data.predict(['harry'], 'p'))
