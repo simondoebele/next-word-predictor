@@ -1,3 +1,4 @@
 language_engineering/
 __pycache__/
+processed_n_grams/
 .pyc

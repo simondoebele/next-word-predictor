@@ -75,5 +75,10 @@ def load(filename: str) -> FilterableDict:
     n_gram_model = len(data[0][0])    
     return FilterableDict(n_gram_model, dict(data))
 
+for n in range(2, 11):
+
+    model = nGramProcessor(n, FILES)
+    model.save(f'processed_n_grams/{n}-gram.pkl')
+
 data = load('./processed_n_grams/2-gram')
 print(data.predict(['harry'], 'p'))
