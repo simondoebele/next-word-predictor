@@ -16,7 +16,8 @@ class FilterableDict(FreqDist):
 
     def predict(self, words: List[str], first_characters: str = '') -> List[Tuple[str, int]]:
 
-        assert len(words) == self.n_gram_model - 1, 'The number of words must be one unit lower than the n-gram'
+        if len(words) != self.n_gram_model - 1:
+            return []
 
         filtered = list(
             filter(
@@ -75,10 +76,10 @@ def load(filename: str) -> FilterableDict:
     n_gram_model = len(data[0][0])    
     return FilterableDict(n_gram_model, dict(data))
 
-for n in range(2, 11):
+# for n in range(2, 11):
 
-    model = nGramProcessor(n, FILES)
-    model.save(f'processed_n_grams/{n}-gram.pkl')
+#     model = nGramProcessor(n, FILES)
+#     model.save(f'processed_n_grams/{n}-gram.pkl')
 
-data = load('./processed_n_grams/2-gram')
-print(data.predict(['harry'], 'p'))
+# data = load('./processed_n_grams/2-gram')
+# print(data.predict(['harry'], 'p'))
