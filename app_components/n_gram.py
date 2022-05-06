@@ -6,6 +6,8 @@ from dash.dependencies import Input, Output, State
 
 layout = [
 
+    # Page title
+
     dbc.Row(
         html.H2(
             children = 'n-Gram Model',
@@ -15,6 +17,8 @@ layout = [
     ),
 
     html.Br(),
+
+    # Slider to select the model
 
     dcc.Slider(
         min=2,
@@ -29,12 +33,16 @@ layout = [
 
     html.Br(),
 
+    # Text area for the inputs
+
     dbc.Textarea(
         id = 'n-gram-text-area',
         placeholder = 'Type something...',
     ),
 
     html.Br(),
+
+    # Console to display the results
 
     dbc.Card(
         dbc.CardBody(

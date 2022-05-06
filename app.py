@@ -3,6 +3,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
+from torch import layout
 
 from app_components.navbar import navbar
 import app_components.n_gram as n_gram
@@ -40,11 +41,22 @@ app.layout = html.Div(
 # Load models
 
 n_gram_models = {
-    n: load(f'./processed_n_grams/{n}-gram')
+    n: load(f'./processed_n_grams/{n}-gram.pkl')
     for n in range(2, 11)
 }
 
 # Callbacks
+
+## ROuter
+
+@app.callback(
+    Output('main-page', 'children'),
+    Input('url', 'pathname')
+)
+
+def router(url): 
+    if url.__contains__('neural-networks'): return nn.layout
+    else: return n_gram.layout
 
 @app.callback(
     Output('n-gram-title', 'children'),

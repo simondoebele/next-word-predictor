@@ -33,11 +33,11 @@ class FilterableDict(FreqDist):
 
     def save(self, filename: str) -> None:
 
-        file = open(f"{filename}.pkl", "wb")
+        file = open(f"{filename}", "wb")
         pickle.dump([*self.items()], file)
         file.close()
 
-        print(f'Data saved in {filename}.pkl')
+        print(f'Data saved in {filename}')
 
 class nGramProcessor():
 
@@ -71,15 +71,17 @@ class nGramProcessor():
 
 def load(filename: str) -> FilterableDict:
 
-    with open(filename + '.pkl', 'rb') as file: data = pickle.load(file)
+    with open(filename, 'rb') as file: data = pickle.load(file)
 
     n_gram_model = len(data[0][0])    
     return FilterableDict(n_gram_model, dict(data))
 
 # for n in range(2, 11):
 
-#     model = nGramProcessor(n, FILES)
-#     model.save(f'processed_n_grams/{n}-gram.pkl')
+#     model = nGramProcessor(n, ['./data/news.2010.en.shuffled.txt'])
+#     model.save(f'processed_n_grams/news-{n}-gram.pkl')
 
-# data = load('./processed_n_grams/2-gram')
-# print(data.predict(['harry'], 'p'))
+# data = load('./processed_n_grams/news-3-gram.pkl')
+# print(data.predict(['harry', 'potter'], 'h'))
+# print(data.predict(['the', 'main'], 'mas'))
+# print(data.predict(['spectacle', 'of'], 'a'))
