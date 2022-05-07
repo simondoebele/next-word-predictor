@@ -42,7 +42,7 @@ app.layout = html.Div(
 
 n_gram_models = {
     n: load(f'./processed_n_grams/{n}-gram.pkl')
-    for n in range(2, 11)
+    for n in range(1, 6)
 }
 
 # Callbacks
@@ -58,18 +58,10 @@ def router(url):
     if url.__contains__('neural-networks'): return nn.layout
     else: return n_gram.layout
 
-@app.callback(
-    Output('n-gram-title', 'children'),
-    Input('n-gram-slider', 'value')
-)
-
-def update_title(n): return f'{n}-Gram Model'
 
 ## List of possible words
 
 @app.callback(
-    Output('console-previous-words', 'children'),
-    Output('console-first-characters', 'children'),
     Output('console-predictions', 'children'),
     Input('n-gram-text-area', 'value'),
     Input('n-gram-slider', 'value')
@@ -83,24 +75,52 @@ def predict_words(text, n):
     tokenized = tokenizer.tokenize(text)
     tokens = [word.lower() for word in tokenized]
 
-    if len(tokens) < n: return '>>> Previous words: ', '>>> First characters: ', '>>> Suggestions: '
+    # if len(tokens) < n: return '>>> Previous words: ', '>>> First characters: ', '>>> Suggestions: '
+
+    # else:
+
+    #     if text.endswith(' '):
+
+    #         first_characters = ''
+    #         words = tokens[- n + 1 :]
+
+    #     else:
+            
+    #         first_characters = tokens[-1]
+    #         words = tokens[- n : -1]
+        
+    #     predictions = n_gram_models[n].predict(words, first_characters)
+    #     predictions = [word for word, frequency in predictions[:10]]
+
+    # if n == 0: words = ''
+
+    if len(tokens) == 0: return '>>> Suggestions: '
 
     else:
 
-        if text.endswith(' '):
+        predictions = []
 
-            first_characters = ''
-            words = tokens[- n + 1 :]
+        for dim in range(1, 6):
 
-        else:
-            
-            first_characters = tokens[-1]
-            words = tokens[- n : -1]
+            if text.endswith(' '):
+
+                first_characters = ''
+                words = tokens[- dim + 1 :]
+
+            else:
+                
+                first_characters = tokens[-1]
+                words = tokens[- dim : -1]
+
+            if dim == 1: words = []
+
+            n_predictions = n_gram_models[dim].predict(words, first_characters)
+            n_predictions = [word for word, frequency in n_predictions]
+            predictions = n_predictions + predictions
+
+        predictions = list(dict.fromkeys(predictions))    
         
-        predictions = n_gram_models[n].predict(words, first_characters)
-        predictions = [word for word, frequency in predictions[:10]]
-    
-    return f'>>> Previous words: {str(words)}', f'>>> First characters: {first_characters}', f'>>> Suggestions: {str(predictions)}'
+        return f'>>> Suggestions: {str(predictions[:n])}'
 
 if __name__ == '__main__':
     app.run_server(debug=True)

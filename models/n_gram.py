@@ -6,7 +6,9 @@ import pickle
 
 import os
 
-FILES = ['./data/' + filename for filename in os.listdir('./data')]
+import numpy as np
+
+FILES = ['./data/' + filename for filename in os.listdir('./data') if filename.startswith('H')]
 
 class FilterableDict(FreqDist):
 
@@ -25,6 +27,8 @@ class FilterableDict(FreqDist):
                 self.items()
             )
         )
+
+        #fast_filtered = np.array(filtered, dtype = [('word', 'S10'), ('occurencies', int)]).sort(order = 'occurencies')
 
         sublist = [(key[-1], value) for key, value in filtered]
         sublist.sort(key = lambda y: y[1], reverse = True)
@@ -76,12 +80,15 @@ def load(filename: str) -> FilterableDict:
     n_gram_model = len(data[0][0])    
     return FilterableDict(n_gram_model, dict(data))
 
-# for n in range(2, 11):
 
-#     model = nGramProcessor(n, ['./data/news.2010.en.shuffled.txt'])
-#     model.save(f'processed_n_grams/news-{n}-gram.pkl')
+# model = nGramProcessor(1, FILES)
+# model.save(f'processed_n_grams/{1}-gram.pkl')
 
-# data = load('./processed_n_grams/news-3-gram.pkl')
-# print(data.predict(['harry', 'potter'], 'h'))
-# print(data.predict(['the', 'main'], 'mas'))
-# print(data.predict(['spectacle', 'of'], 'a'))
+# a = np.array([('hi', 1), ('how', 2), ('are', 3), ('you', 1)], dtype = [('word', 'S10'), ('occurencies', int)])
+# fil = lambda item, words, first_characters: (words == list(item[0])[:-1] and item[0][-1].startswith(first_characters))
+# print(fil(a, [], 'h'))
+
+# data = load('./processed_n_grams/3-gram.pkl')
+# print(data.predict(['harry', 'potter'], ''))
+# print(data.predict(['on', 'the'], 'mas'))
+# print(data.predict(['house', 'of']))

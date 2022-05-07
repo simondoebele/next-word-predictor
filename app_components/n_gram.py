@@ -21,14 +21,14 @@ layout = [
     # Slider to select the model
 
     dcc.Slider(
-        min=2,
-        max=10,
+        min=1,
+        max=15,
         step=1,
-        value=3,
+        value=10,
         id='n-gram-slider',
         disabled=False,
         dots=True,
-        marks={ i: {'label': str(i)} for i in range(2, 11) },
+        marks={ i: {'label': str(i)} for i in range(1, 16) },
     ),
 
     html.Br(),
@@ -53,8 +53,8 @@ layout = [
                         html.Strong('   Console')
                     ]
                 ),
-                html.P('>>> Previous words: ', id='console-previous-words'),
-                html.P('>>> First characters: ', id='console-first-characters'),
+                # html.P('>>> Previous words: ', id='console-previous-words'),
+                # html.P('>>> First characters: ', id='console-first-characters'),
                 html.P('>>> Suggestions: ', id='console-predictions')
             ]
         ),
