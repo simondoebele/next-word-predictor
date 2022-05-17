@@ -5,16 +5,24 @@ from nltk.tokenize import RegexpTokenizer
 import pickle
 
 import os
-
 import numpy as np
 
 FILES = ['./data/' + filename for filename in os.listdir('./data') if filename.startswith('H')]
 
 class FilterableDict(FreqDist):
 
-    def __init__(self, n_gram_model: int, samples=None):
+    def __init__(self, n_gram_model: int, samples = None):
         super().__init__(samples)
         self.n_gram_model = n_gram_model
+
+    def filter_condition(self, item, words, first_characters):
+
+        if len(words) != self.n_gram_model - 1: return False
+        return np.all(np.array(item[0][:-1]) == np.array(words)) and item[0][0][-1].startswith(first_characters)
+
+    def filter_keys(self, words, first_characters):
+
+        return [self.filter_condition(item, words, first_characters) for item in self.items()]
 
     def predict(self, words: List[str], first_characters: str = '') -> List[Tuple[str, int]]:
 
@@ -27,8 +35,6 @@ class FilterableDict(FreqDist):
                 self.items()
             )
         )
-
-        #fast_filtered = np.array(filtered, dtype = [('word', 'S10'), ('occurencies', int)]).sort(order = 'occurencies')
 
         sublist = [(key[-1], value) for key, value in filtered]
         sublist.sort(key = lambda y: y[1], reverse = True)
@@ -89,6 +95,6 @@ def load(filename: str) -> FilterableDict:
 # print(fil(a, [], 'h'))
 
 # data = load('./processed_n_grams/3-gram.pkl')
-# print(data.predict(['harry', 'potter'], ''))
-# print(data.predict(['on', 'the'], 'mas'))
-# print(data.predict(['house', 'of']))
+# N = nGram(data)
+# print(N.predict(['harry', 'potter'], 'w'))
+# print(data.predict(['harry', 'potter'], 'w'))

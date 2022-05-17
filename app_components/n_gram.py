@@ -2,7 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
-
+from config import *
 
 layout = [
 
@@ -10,7 +10,7 @@ layout = [
 
     dbc.Row(
         html.H2(
-            children = 'n-Gram Model',
+            children = 'n-gram Model',
             id = 'n-gram-title',
             style = {'font-family': 'Secular One'}
         ),
@@ -22,9 +22,9 @@ layout = [
 
     dcc.Slider(
         min=1,
-        max=15,
+        max=10,
         step=1,
-        value=10,
+        value=DEFAULT_RECOMMENDATIONS,
         id='n-gram-slider',
         disabled=False,
         dots=True,

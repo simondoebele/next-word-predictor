@@ -11,6 +11,7 @@ import app_components.neural_networks as nn
 
 from models.n_gram import load
 from nltk.tokenize import RegexpTokenizer
+from config import *
 
 
 app = dash.Dash(
@@ -42,12 +43,12 @@ app.layout = html.Div(
 
 n_gram_models = {
     n: load(f'./processed_n_grams/{n}-gram.pkl')
-    for n in range(1, 6)
+    for n in range(1, N_GRAM + 1)
 }
 
 # Callbacks
 
-## ROuter
+## Router
 
 @app.callback(
     Output('main-page', 'children'),
@@ -69,58 +70,41 @@ def router(url):
 
 def predict_words(text, n): 
 
-    if text is None: text = ''
+    """
+    Use of backoff prediction: is n-gram does not exist, check for (n-1)-gram.
+    """
+
+    if text is None or text == '': return '>>> Suggestions: '
 
     tokenizer = RegexpTokenizer(r'\w+')
     tokenized = tokenizer.tokenize(text)
     tokens = [word.lower() for word in tokenized]
 
-    # if len(tokens) < n: return '>>> Previous words: ', '>>> First characters: ', '>>> Suggestions: '
+    predictions = []
 
-    # else:
+    for dim in range(N_GRAM, 0, -1):
 
-    #     if text.endswith(' '):
+        if text.endswith(' '):
 
-    #         first_characters = ''
-    #         words = tokens[- n + 1 :]
+            first_characters = ''
+            words = tokens[- dim + 1 :]
 
-    #     else:
+        else:
             
-    #         first_characters = tokens[-1]
-    #         words = tokens[- n : -1]
-        
-    #     predictions = n_gram_models[n].predict(words, first_characters)
-    #     predictions = [word for word, frequency in predictions[:10]]
+            first_characters = tokens[-1]
+            words = tokens[- dim : -1]
 
-    # if n == 0: words = ''
+        if dim == 1: words = []
 
-    if len(tokens) == 0: return '>>> Suggestions: '
+        n_predictions = n_gram_models[dim].predict(words, first_characters)[:n - len(predictions)]
+        n_predictions = [word for word, frequency in n_predictions]
+        predictions += n_predictions
 
-    else:
+        if len(predictions) == n: break
 
-        predictions = []
-
-        for dim in range(1, 6):
-
-            if text.endswith(' '):
-
-                first_characters = ''
-                words = tokens[- dim + 1 :]
-
-            else:
-                
-                first_characters = tokens[-1]
-                words = tokens[- dim : -1]
-
-            if dim == 1: words = []
-
-            n_predictions = n_gram_models[dim].predict(words, first_characters)
-            n_predictions = [word for word, frequency in n_predictions]
-            predictions = n_predictions + predictions
-
-        predictions = list(dict.fromkeys(predictions))    
-        
-        return f'>>> Suggestions: {str(predictions[:n])}'
+    predictions = list(dict.fromkeys(predictions))    
+    
+    return f'>>> Suggestions: {str(predictions)}'
 
 if __name__ == '__main__':
     app.run_server(debug=True)

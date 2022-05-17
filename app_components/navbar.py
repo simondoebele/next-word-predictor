@@ -2,7 +2,7 @@ import dash_bootstrap_components as dbc
 
 navbar = dbc.NavbarSimple(
     children=[
-        dbc.NavItem(dbc.NavLink("n-Gram", href="n-gram", style = {'font-family': 'Segoe UI'})),
+        dbc.NavItem(dbc.NavLink("n-gram", href="n-gram", style = {'font-family': 'Segoe UI'})),
         dbc.NavItem(dbc.NavLink("Neural Networks", href="neural-networks", style = {'font-family': 'Segoe UI'})),
     ],
     brand="WordPredictor.",
