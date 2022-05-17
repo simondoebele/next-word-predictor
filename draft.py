@@ -14,7 +14,13 @@ array = np.array([a])
 print(type(array[0][:-1]))
 
 b = ('the', 'great', 'dog')
-print(b[:-1])
+print(b[:-9])
 
 print(array[0][0])
 print(np.array(('a', 'b')))
+
+a = [1, 2, 3]
+print(tuple(a))
+
+a = ('h',)
+print(a[:-1])

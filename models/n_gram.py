@@ -1,3 +1,5 @@
+from collections import defaultdict
+from email.policy import default
 from typing import List, Tuple
 from nltk import FreqDist
 from nltk.util import ngrams 
@@ -86,15 +88,55 @@ def load(filename: str) -> FilterableDict:
     n_gram_model = len(data[0][0])    
     return FilterableDict(n_gram_model, dict(data))
 
+def generate(n_max = 5):
 
-# model = nGramProcessor(1, FILES)
-# model.save(f'processed_n_grams/{1}-gram.pkl')
+    models = {
+        i: load(f'processed_n_grams\{i}-gram.pkl') for i in range(1, n_max + 1)
+    }
 
-# a = np.array([('hi', 1), ('how', 2), ('are', 3), ('you', 1)], dtype = [('word', 'S10'), ('occurencies', int)])
-# fil = lambda item, words, first_characters: (words == list(item[0])[:-1] and item[0][-1].startswith(first_characters))
-# print(fil(a, [], 'h'))
+    d = defaultdict(list)
 
-# data = load('./processed_n_grams/3-gram.pkl')
-# N = nGram(data)
-# print(N.predict(['harry', 'potter'], 'w'))
-# print(data.predict(['harry', 'potter'], 'w'))
+    for n in range(n_max, 0, -1):
+
+        for key in models[n]:
+            d[key[:-1]].append((key[-1], models[n][key]))
+
+    file = open(f"processed_n_grams\{n_max}.pkl", "wb")
+    pickle.dump([*d.items()], file)
+    file.close()
+
+    print('File generated')
+
+def load_all(filename: str):
+
+    with open(filename, 'rb') as file: data = pickle.load(file)
+
+    return nGram(list, dict(data))
+
+class nGram(defaultdict):
+
+    def __init__(self, default, dictionnary):
+        super().__init__(default, dictionnary)
+        self.dimension = max([len(key) for key in self.keys()]) + 1
+
+    def predict(self, words: tuple, first_characters: str = '', limit: int = 4) -> List[Tuple[str, int]]:
+        
+        predictions = []
+
+        for n in range(0, self.dimension):
+
+            filtered = list(
+                filter(
+                    lambda item: item[0].startswith(first_characters),
+                    self[words[n:]]
+                )
+            )
+
+            filtered.sort(key = lambda y: y[1], reverse = True)
+            sublist = [key for key, value in filtered]
+
+            predictions += sublist
+
+        return list(dict.fromkeys(predictions))[:limit]
+
+#generate()
