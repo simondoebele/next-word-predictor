@@ -1,5 +1,4 @@
 from collections import defaultdict
-from email.policy import default
 from typing import List, Tuple
 from nltk import FreqDist
 from nltk.util import ngrams 
@@ -8,6 +7,7 @@ import pickle
 
 import os
 import numpy as np
+from time import time
 
 FILES = ['./data/' + filename for filename in os.listdir('./data') if filename.startswith('H')]
 
@@ -16,15 +16,6 @@ class FilterableDict(FreqDist):
     def __init__(self, n_gram_model: int, samples = None):
         super().__init__(samples)
         self.n_gram_model = n_gram_model
-
-    def filter_condition(self, item, words, first_characters):
-
-        if len(words) != self.n_gram_model - 1: return False
-        return np.all(np.array(item[0][:-1]) == np.array(words)) and item[0][0][-1].startswith(first_characters)
-
-    def filter_keys(self, words, first_characters):
-
-        return [self.filter_condition(item, words, first_characters) for item in self.items()]
 
     def predict(self, words: List[str], first_characters: str = '') -> List[Tuple[str, int]]:
 
@@ -91,7 +82,7 @@ def load(filename: str) -> FilterableDict:
 def generate(n_max = 5):
 
     models = {
-        i: load(f'processed_n_grams\{i}-gram.pkl') for i in range(1, n_max + 1)
+        i: load(f'processed_n_grams/news-{i}-gram.pkl') for i in range(1, n_max + 1)
     }
 
     d = defaultdict(list)
@@ -101,7 +92,7 @@ def generate(n_max = 5):
         for key in models[n]:
             d[key[:-1]].append((key[-1], models[n][key]))
 
-    file = open(f"processed_n_grams\{n_max}.pkl", "wb")
+    file = open(f"processed_n_grams/news-{n_max}.pkl", "wb")
     pickle.dump([*d.items()], file)
     file.close()
 
@@ -139,4 +130,20 @@ class nGram(defaultdict):
 
         return list(dict.fromkeys(predictions))[:limit]
 
+    
 #generate()
+
+def process_news(n_min, n_max):
+
+    t = time()
+
+    for n in range(n_min, n_max + 1):
+        model = nGramProcessor(n, ['data/news.2010.en.shuffled.txt'])
+        model.save(f'processed_n_grams/news-{n}-gram.pkl')
+        print(f'{n}-gram processed in {time() - t} seconds.')
+        t = time()
+    
+    generate()
+
+generate(3)
+#process_news(4,5)
