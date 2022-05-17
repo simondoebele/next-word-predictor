@@ -9,7 +9,7 @@ from app_components.navbar import navbar
 import app_components.n_gram as n_gram
 import app_components.neural_networks as nn
 
-from models.n_gram import load
+from models.n_gram import load_all
 from nltk.tokenize import RegexpTokenizer
 from config import *
 
@@ -41,10 +41,7 @@ app.layout = html.Div(
 
 # Load models
 
-n_gram_models = {
-    n: load(f'./processed_n_grams/{n}-gram.pkl')
-    for n in range(1, N_GRAM + 1)
-}
+n_gram_models = load_all(f'processed_n_grams\{5}.pkl')
 
 # Callbacks
 
@@ -80,31 +77,43 @@ def predict_words(text, n):
     tokenized = tokenizer.tokenize(text)
     tokens = [word.lower() for word in tokenized]
 
-    predictions = []
+    if text.endswith(' '):
 
-    for dim in range(N_GRAM, 0, -1):
+        first_characters = ''
+        words = tuple(tokens[- n_gram_models.dimension + 1 :])
 
-        if text.endswith(' '):
+    else:
+        
+        first_characters = tokens[-1]
+        words = tuple(tokens[- n_gram_models.dimension : -1])
 
-            first_characters = ''
-            words = tokens[- dim + 1 :]
+    return f'>>> Suggestions: {str(n_gram_models.predict(words, first_characters, n))}'
 
-        else:
+    # predictions = []
+
+    # for dim in range(N_GRAM, 0, -1):
+
+    #     if text.endswith(' '):
+
+    #         first_characters = ''
+    #         words = tokens[- dim + 1 :]
+
+    #     else:
             
-            first_characters = tokens[-1]
-            words = tokens[- dim : -1]
+    #         first_characters = tokens[-1]
+    #         words = tokens[- dim : -1]
 
-        if dim == 1: words = []
+    #     if dim == 1: words = []
 
-        n_predictions = n_gram_models[dim].predict(words, first_characters)[:n - len(predictions)]
-        n_predictions = [word for word, frequency in n_predictions]
-        predictions += n_predictions
+    #     n_predictions = n_gram_models[dim].predict(words, first_characters)[:n - len(predictions)]
+    #     n_predictions = [word for word, frequency in n_predictions]
+    #     predictions += n_predictions
 
-        if len(predictions) == n: break
+    #     if len(predictions) == n: break
 
-    predictions = list(dict.fromkeys(predictions))    
+    # predictions = list(dict.fromkeys(predictions))    
     
-    return f'>>> Suggestions: {str(predictions)}'
+    # return f'>>> Suggestions: {str(predictions)}'
 
 if __name__ == '__main__':
     app.run_server(debug=True)
