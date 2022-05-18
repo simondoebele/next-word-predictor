@@ -1,3 +1,4 @@
+import string
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -41,7 +42,8 @@ app.layout = html.Div(
 
 # Load models
 
-n_gram_models = load_all(f'processed_n_grams/news20-5.pkl')
+# n_gram_models = load_all(f'processed_n_grams/news20-5.pkl')
+n_gram_models = load_all(f'processed_n_grams/5.pkl')
 
 # Callbacks
 
@@ -60,7 +62,10 @@ def router(url):
 ## List of possible words
 
 @app.callback(
-    Output('console-predictions', 'children'),
+    [
+        Output(f'console-predictions-{n}', 'children')
+        for n in range(1, 11)
+    ],
     Input('n-gram-text-area', 'value'),
     Input('n-gram-slider', 'value')
 )
@@ -71,7 +76,7 @@ def predict_words(text, n):
     Use of backoff prediction: is n-gram does not exist, check for (n-1)-gram.
     """
 
-    if text is None or text == '': return '>>> Suggestions: '
+    if text is None or text == '': return [None for _ in range(10)]
 
     tokenizer = RegexpTokenizer(r'\w+')
     tokenized = tokenizer.tokenize(text)
@@ -87,33 +92,54 @@ def predict_words(text, n):
         first_characters = tokens[-1]
         words = tuple(tokens[- n_gram_models.dimension : -1])
 
-    return f'>>> Suggestions: {str(n_gram_models.predict(words, first_characters, n))}'
+    predictions = n_gram_models.predict(words, first_characters, n)
+    predictions += [None for _ in range(10 - len(predictions))]
 
-    # predictions = []
+    return predictions
 
-    # for dim in range(N_GRAM, 0, -1):
+## Add word from console
 
-    #     if text.endswith(' '):
+@app.callback(
+    Output('n-gram-text-area', 'value'),
+    [
+        Input(f'console-predictions-{n}', 'n_clicks')
+        for n in range(1, 11)
+    ],
+    State('n-gram-text-area', 'value'),
+    [
+        State(f'console-predictions-{n}', 'children')
+        for n in range(1, 11)
+    ],
+    prevent_initial_call = True
+)
 
-    #         first_characters = ''
-    #         words = tokens[- dim + 1 :]
+def add_word(
+    click_1, click_2, click_3, click_4, click_5, click_6, click_7, click_8, click_9, click_10,
+    text,
+    word_1, word_2, word_3, word_4, word_5, word_6, word_7, word_8, word_9, word_10
+):
 
-    #     else:
-            
-    #         first_characters = tokens[-1]
-    #         words = tokens[- dim : -1]
-
-    #     if dim == 1: words = []
-
-    #     n_predictions = n_gram_models[dim].predict(words, first_characters)[:n - len(predictions)]
-    #     n_predictions = [word for word, frequency in n_predictions]
-    #     predictions += n_predictions
-
-    #     if len(predictions) == n: break
-
-    # predictions = list(dict.fromkeys(predictions))    
+    ctx = dash.callback_context
+    triggerer = ctx.triggered[0]['prop_id'].split('.')[0]
     
-    # return f'>>> Suggestions: {str(predictions)}'
+    if triggerer is None: return text
+    else:
+
+        if text.endswith(' '): pass
+        elif text is None or text == '': text == ''
+        else: 
+            while text != '' and text[-1] in string.ascii_lowercase: text = text[:-1]
+
+        if triggerer == 'console-predictions-1': return text + word_1 + ' '
+        elif triggerer == 'console-predictions-2': return text + word_2 + ' '
+        elif triggerer == 'console-predictions-3': return text + word_3 + ' '
+        elif triggerer == 'console-predictions-4': return text + word_4 + ' '
+        elif triggerer == 'console-predictions-5': return text + word_5 + ' '
+        elif triggerer == 'console-predictions-6': return text + word_6 + ' '
+        elif triggerer == 'console-predictions-7': return text + word_7 + ' '
+        elif triggerer == 'console-predictions-8': return text + word_8 + ' '
+        elif triggerer == 'console-predictions-9': return text + word_9 + ' '
+        else: return text + word_10 + ' '
 
 if __name__ == '__main__':
     app.run_server(debug=True)

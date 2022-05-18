@@ -55,7 +55,27 @@ layout = [
                 ),
                 # html.P('>>> Previous words: ', id='console-previous-words'),
                 # html.P('>>> First characters: ', id='console-first-characters'),
-                html.P('>>> Suggestions: ', id='console-predictions')
+                html.A('>>> Suggestions: ', id='console-predictions'),
+                html.A(href = '#', id='console-predictions-1'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-2'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-3'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-4'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-5'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-6'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-7'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-8'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-9'),
+                html.A(' '),
+                html.A(href = '#', id='console-predictions-10')
+
             ]
         ),
         style = {'font-family': 'consolas', 'background-color': '#f2f2f2'} 
