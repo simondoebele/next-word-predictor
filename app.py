@@ -41,7 +41,7 @@ app.layout = html.Div(
 
 # Load models
 
-n_gram_models = load_all(f'processed_n_grams/news-2-gram.pkl')
+n_gram_models = load_all(f'processed_n_grams/news20-5.pkl')
 
 # Callbacks
 
