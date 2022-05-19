@@ -82,7 +82,7 @@ def load(filename: str) -> FilterableDict:
 def generate(n_max = 5):
 
     models = {
-        i: load(f'processed_n_grams/news20-{i}-gram.pkl') for i in range(1, n_max + 1)
+        i: load(f'processed_n_grams/training-set-{i}-gram.pkl') for i in range(1, n_max + 1)
     }
 
     d = defaultdict(list)
@@ -92,7 +92,7 @@ def generate(n_max = 5):
         for key in models[n]:
             d[key[:-1]].append((key[-1], models[n][key]))
 
-    file = open(f"processed_n_grams/news20-{n_max}.pkl", "wb")
+    file = open(f"processed_n_grams/training-set-n-gram.pkl", "wb")
     pickle.dump([*d.items()], file)
     file.close()
 
@@ -138,12 +138,11 @@ def process_news(n_min, n_max):
     t = time()
 
     for n in range(n_min, n_max + 1):
-        model = nGramProcessor(n, ['data/news20.txt'])
-        model.save(f'processed_n_grams/news20-{n}-gram.pkl')
+        model = nGramProcessor(n, ['models/news.txt'])
+        model.save(f'processed_n_grams/training-set-{n}-gram.pkl')
         print(f'{n}-gram processed in {time() - t} seconds.')
         t = time()
     
     generate()
 
-#process_news(1,5)
-#generate(4)
+# process_news(1,5)

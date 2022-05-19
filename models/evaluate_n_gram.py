@@ -67,7 +67,7 @@ def evaluate_and_save(model: nGram, test_file: str, max_recommendation: int = 4)
 
     evaluation = evaluate(model, test_file, max_recommendation)
 
-    file = open("evaluation/n-gram/saved_keystrokes.pkl", "wb")
+    file = open("evaluation/n-gram/saved_keystrokes_training_set.pkl", "wb")
     pickle.dump(evaluation, file)
     file.close()
 
@@ -102,12 +102,12 @@ def plot_graph(data: dict) -> None:
 
     plt.legend()
 
-    plt.savefig('evaluation/n-gram/saved_keystrokes.png')
+    plt.savefig('evaluation/n-gram/saved_keystrokes_training_set.png')
     plt.show()
 
 # model = load_all('processed_n_grams/news20-5.pkl')
-# model = load_all('processed_n_grams/data.pkl')
-# evaluate_and_save(model, 'data/test.txt', 5)
+model = load_all('processed_n_grams/training-set-n-gram.pkl')
+evaluate_and_save(model, 'data/test.txt', 5)
 
-dic = load("evaluation/n-gram/saved_keystrokes.pkl")
+dic = load("evaluation/n-gram/saved_keystrokes_training_set.pkl")
 plot_graph(dic)
