@@ -10,8 +10,8 @@ layout = [
 
     dbc.Row(
         html.H2(
-            children = 'Neural Networks',
-            id = 'neural-networks-title',
+            children = 'n-gram Model',
+            id = 'main-page-title',
             style = {'font-family': 'Secular One'}
         ),
     ),
@@ -25,7 +25,7 @@ layout = [
         max=10,
         step=1,
         value=DEFAULT_RECOMMENDATIONS,
-        id='neural-networks-slider',
+        id='main-page-slider',
         disabled=False,
         dots=True,
         marks={ i: {'label': str(i)} for i in range(1, 16) },
@@ -36,7 +36,7 @@ layout = [
     # Text area for the inputs
 
     dbc.Textarea(
-        id = 'neural-networks-text-area',
+        id = 'main-page-text-area',
         placeholder = 'Type something...',
     ),
 

@@ -7,13 +7,13 @@ from dash.dependencies import Input, Output, State
 from torch import layout
 
 from app_components.navbar import navbar
-import app_components.n_gram as n_gram
-import app_components.neural_networks as nn
+import app_components.main_page as mainpage
 
 from models.n_gram import load_all
 from nltk.tokenize import RegexpTokenizer
 from config import *
 
+from app_RNN import load_RNN
 
 app = dash.Dash(
     __name__,
@@ -35,7 +35,7 @@ app.layout = html.Div(
         dcc.Location(id = 'url', refresh = False),
         dbc.Container(
             id = 'main-page',
-            children = n_gram.layout
+            children = mainpage.layout
         ),
     ]
 )
@@ -44,19 +44,20 @@ app.layout = html.Div(
 
 # n_gram_models = load_all(f'processed_n_grams/news20-5.pkl')
 n_gram_models = load_all(f'processed_n_grams/5.pkl')
+rnn = load_RNN('model_2022-05-19_16_15_44_320110')
 
 # Callbacks
 
 ## Router
 
 @app.callback(
-    Output('main-page', 'children'),
+    Output('main-page-title', 'children'),
     Input('url', 'pathname')
 )
 
 def router(url): 
-    if url.__contains__('neural-networks'): return nn.layout
-    else: return n_gram.layout
+    if url.__contains__('neural-networks'): return 'Recurrent Neural Network'
+    else: return 'n-gram Model'
 
 
 ## List of possible words
@@ -66,17 +67,21 @@ def router(url):
         Output(f'console-predictions-{n}', 'children')
         for n in range(1, 11)
     ],
-    Input('n-gram-text-area', 'value'),
-    Input('n-gram-slider', 'value')
+    Input('main-page-text-area', 'value'),
+    Input('main-page-slider', 'value'),
+    Input('url', 'pathname')
 )
 
-def predict_words(text, n): 
+def predict_words(text, n, type): 
 
     """
     Use of backoff prediction: is n-gram does not exist, check for (n-1)-gram.
     """
 
     if text is None or text == '': return [None for _ in range(10)]
+
+    if type.__contains__('neural-networks'): use_rnn = True
+    else: use_rnn = False
 
     tokenizer = RegexpTokenizer(r'\w+')
     tokenized = tokenizer.tokenize(text)
@@ -92,7 +97,8 @@ def predict_words(text, n):
         first_characters = tokens[-1]
         words = tuple(tokens[- n_gram_models.dimension : -1])
 
-    predictions = n_gram_models.predict(words, first_characters, n)
+    if use_rnn: predictions = rnn.predict_next_word(words, first_characters, n)
+    else: predictions = n_gram_models.predict(words, first_characters, n)
     predictions += [None for _ in range(10 - len(predictions))]
 
     return predictions
@@ -100,12 +106,12 @@ def predict_words(text, n):
 ## Add word from console
 
 @app.callback(
-    Output('n-gram-text-area', 'value'),
+    Output('main-page-text-area', 'value'),
     [
         Input(f'console-predictions-{n}', 'n_clicks')
         for n in range(1, 11)
     ],
-    State('n-gram-text-area', 'value'),
+    State('main-page-text-area', 'value'),
     [
         State(f'console-predictions-{n}', 'children')
         for n in range(1, 11)

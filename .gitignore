@@ -2,4 +2,5 @@ language_engineering/
 __pycache__/
 processed_n_grams/
 data/
+model_2022-05-19_16_15_44_320110/
 .pyc
