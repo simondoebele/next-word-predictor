@@ -1,0 +1,1 @@
+python3 RNN.py -tr news.txt -de news.txt -te news.txt -hs 100 -bs 4 -e 2 -lr 0.001 -ef glove.6B.50d.txt -s
