@@ -119,7 +119,10 @@ class EncoderRNN(nn.Module):
         if embeddings != None:
             self.embedding.weight = nn.Parameter(torch.tensor(embeddings, dtype=torch.float),
                                                  requires_grad=tune_embeddings)
-        self.rnn = nn.RNN(embedding_size, hidden_size, batch_first=True, bidirectional=self.is_bidirectional)
+        if use_gru:
+            self.rnn = nn.GRU(embedding_size, hidden_size, batch_first=True, bidirectional=self.is_bidirectional)
+        else:
+            self.rnn = nn.RNN(embedding_size, hidden_size, batch_first=True, bidirectional=self.is_bidirectional)
         self.device = device
         self.to(device)
 
@@ -306,46 +309,35 @@ if __name__ == '__main__':
                 # forcing or not.
                 # idx = [w2i[START_SYMBOL] for sublist in sentence]
                 # predicted_symbol = [w2i[START_SYMBOL] for sublist in sentence]
-                print(torch.tensor(sentence).size())
-                predictions = encoder(sentence)
-                print("pred: ", predictions.size())
-                print("corr: ", torch.tensor(target_sentence).size())
-                exit()
-                loss += criterion(predictions, torch.tensor(target_sentence).to(device))
 
                 sentence_length = len(sentence[0])
                 # NOTE: we use teacher forcing!
-                # for i in range(sentence_length): # only go to seq_length - 1 because target sentence is words from respective next time step
-                #     # The targets will be the ith symbol of all the target
-                #     # strings. They will also be used as inputs for the next
-                #     # time step if we use teacher forcing.
-                #     correct = [sublist[i] for sublist in target_sentence]
-                #     input_to_predict = [sublist[:i+1] for sublist in sentence]
-                #     #print(input_to_predict)
-                #
-                #     # predict the next word by all the sentence so far.
-                #     predictions = encoder(input_to_predict)
-                #     #print(predictions.size()) # B x (seq-length=1) x hidden_size
-                #     #print(torch.tensor(correct).size())
-                #     #exit()
-                #     _, predicted_tensor = predictions.topk(1)  # argmax
-                #     predicted_symbols = predicted_tensor.squeeze()
-                #     print(predicted_symbols.size())
-                #     print(torch.tensor(correct).size())
-                #     exit()
+                for i in range(sentence_length): # only go to seq_length - 1 because target sentence is words from respective next time step
+                    # The targets will be the ith symbol of all the target
+                    # strings. They will also be used as inputs for the next
+                    # time step if we use teacher forcing.
+                    correct = [sublist[i] for sublist in target_sentence]
+                    input_to_predict = [sublist[:i+1] for sublist in sentence]
+                    #print(input_to_predict)
+
+                    # predict the next word by all the sentence so far.
+                    predictions = encoder(input_to_predict)
+                    #print(predictions.size()) # B x (seq-length=1) x hidden_size
+                    #print(torch.tensor(correct).size())
+                    #exit()
+                    _, predicted_tensor = predictions.topk(1)  # argmax
+                    predicted_symbols = predicted_tensor.squeeze().tolist()
                     # print(predicted_symbols)  # B x (seq-length=1) x hidden_size
 
 
-                    #loss += criterion(predicted_symbols, torch.tensor(correct).to(device))
+                    loss += criterion(predictions, torch.tensor(correct).to(device))
                     #print(loss)
                     #exit()
                 loss /= (sentence_length * args.batch_size)
                 loss.backward()
                 encoder_optimizer.step()
-                print("loss: ", loss.item())
                 total_loss += loss
                 print(total_loss)
-                exit()
             print(datetime.now().strftime("%H:%M:%S"), "Epoch", epoch, "loss:", total_loss.detach().item())
             total_loss = 0
 
