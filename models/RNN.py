@@ -138,7 +138,7 @@ class EncoderRNN(nn.Module):
         outputs, final_hidden_state = self.rnn(word_embeddings)
         #print("outputs: ", outputs.size()) # torch.Size([4, 1, 100])
         #print("final_hidden_state: ", final_hidden_state.size())
-        predictions = self.output(torch.squeeze(final_hidden_state))
+        predictions = self.output(torch.squeeze(outputs))
         #print("predictions: ", predictions.size()) # should be: batch_size x no-of-output-symbols
         return predictions
 
@@ -199,8 +199,8 @@ if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     if args.load:
-        w2i = pickle.load(open(os.path.join(args.load, "source_w2i"), 'rb'))
-        i2w = pickle.load(open(os.path.join(args.load, "source_i2w"), 'rb'))
+        w2i = pickle.load(open(os.path.join(args.load, "w2i"), 'rb'))
+        i2w = pickle.load(open(os.path.join(args.load, "i2w"), 'rb'))
 
         settings = json.load(open(os.path.join(args.load, "settings.json")))
 
@@ -306,12 +306,12 @@ if __name__ == '__main__':
                 # forcing or not.
                 # idx = [w2i[START_SYMBOL] for sublist in sentence]
                 # predicted_symbol = [w2i[START_SYMBOL] for sublist in sentence]
-                print(torch.tensor(sentence).size())
+                # print(torch.tensor(sentence).size())
                 predictions = encoder(sentence)
-                print("pred: ", predictions.size())
-                print("corr: ", torch.tensor(target_sentence).size())
-                exit()
-                loss += criterion(predictions, torch.tensor(target_sentence).to(device))
+                # print("pred: ", predictions.size())
+                # print("corr: ", torch.tensor(target_sentence).size())
+                #exit()
+                loss += criterion(predictions.transpose(1, 2), torch.tensor(target_sentence).to(device))
 
                 sentence_length = len(sentence[0])
                 # NOTE: we use teacher forcing!
@@ -345,13 +345,13 @@ if __name__ == '__main__':
                 print("loss: ", loss.item())
                 total_loss += loss
                 print(total_loss)
-                exit()
+                #exit()
             print(datetime.now().strftime("%H:%M:%S"), "Epoch", epoch, "loss:", total_loss.detach().item())
             total_loss = 0
 
-            if epoch % 10 == 0:
-                print("Evaluating on the dev data...")
-                evaluate(dev_dataset, encoder)
+            # if epoch % 10 == 0:
+            #     print("Evaluating on the dev data...")
+            #     evaluate(dev_dataset, encoder)
 
         # ==================== Save the model  ==================== #
 
@@ -393,7 +393,7 @@ if __name__ == '__main__':
     print("Number of test sentences: ", len(test_dataset))
     print()
 
-    evaluate(test_dataset, encoder)
+    #evaluate(test_dataset, encoder)
 
     # ==================== User interaction ==================== #
 
@@ -410,11 +410,12 @@ if __name__ == '__main__':
         except KeyError:
             print("Erroneous input string")
             continue
-        predictions, hidden = encoder([source_sentence])
+        predictions = encoder([source_sentence])
         if encoder.is_bidirectional:
             hidden = hidden.permute((1, 0, 2)).reshape(1, -1).unsqueeze(0)
 
-        _, predicted_tensor = predictions.topk(1)
+        _, predicted_tensor = predictions.topk(3)
+        print(predicted_tensor)
         predicted_symbol = predicted_tensor.detach().item()
         #print(i2w[predicted_symbol])
         print(i2w[predicted_symbol].encode('utf-8').decode(), end=' ')
