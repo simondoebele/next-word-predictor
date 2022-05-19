@@ -416,9 +416,15 @@ if __name__ == '__main__':
 
         _, predicted_tensor = predictions.topk(3)
         print(predicted_tensor)
-        predicted_symbol = predicted_tensor.detach().item()
+        if len(predicted_tensor.shape) == 1:
+            predicted_symbol = [x.item() for x in predicted_tensor]
+        else:
+            predicted_symbol = [x.item() for x in predicted_tensor[-1]]
+        print(predicted_symbol)
+        #predicted_symbol = predicted_tensor.detach().item()
         #print(i2w[predicted_symbol])
-        print(i2w[predicted_symbol].encode('utf-8').decode(), end=' ')
+        for word in predicted_symbol:
+            print(i2w[word].encode('utf-8').decode(), end=' ')
         print()
 
 
