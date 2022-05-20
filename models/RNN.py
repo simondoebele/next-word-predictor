@@ -101,7 +101,7 @@ class PadSequence:
         padded_target = [[l[i] if i < len(l) else pad_word for i in range(max_len)] for l in target]
         return padded_source, padded_target
 
-# ==================== Encoder ==================== #
+# ==================== RNN ==================== #
 
 class EncoderRNN(nn.Module):
     """
@@ -168,7 +168,6 @@ def evaluate(ds, encoder):
 
 if __name__ == '__main__':
 
-    # ==================== Main program ==================== #
     # Decode the command-line arguments
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-tr', '--train', default='l1_train.txt', help='A training file')
@@ -253,13 +252,9 @@ if __name__ == '__main__':
             embeddings = None
 
         training_loader = DataLoader(training_dataset, batch_size=args.batch_size, collate_fn=PadSequence())
-        # can still set num_workers for speed and shuffle=True
         dev_loader = DataLoader(dev_dataset, batch_size=args.batch_size, collate_fn=PadSequence())
 
         criterion = nn.CrossEntropyLoss()
-        # criterion = nn.NLLLoss()
-
-        # print("no_input_symbols: ", len(w2i)) -> lots more words (that were not part of dataset, but are part of pretrained glove)
 
         encoder = EncoderRNN(
             len(i2w),
@@ -277,36 +272,12 @@ if __name__ == '__main__':
         encoder.train()
         print(datetime.now().strftime("%H:%M:%S"), "Starting training.")
 
-        #dataset = iter(training_loader)
-        #data = dataset.next()
-        #print(data)
-        #print(source)
-        #print(target)
-        #source, target = data
-        #exit()
-
         for epoch in range(args.epochs):
             total_loss = 0
             for sentence, target_sentence in training_loader:  # tqdm(training_loader, desc="Epoch {}".format(epoch + 1)):
-                #print(sentence, target_sentence)
-                #exit()
                 encoder_optimizer.zero_grad()
                 loss = 0
-                # hidden is (D * num_layers, B, H)
-                # outputs, hidden = encoder(sentence)
-                # if args.bidirectional:
-                #     hidden = torch.cat([hidden[0, :, :], hidden[1, :, :]], dim=1).unsqueeze(0)
 
-                # The probability of doing teacher forcing will decrease
-                # from 1 to 0 over the range of epochs.
-                #teacher_forcing_ratio = 1  # - epoch/args.epochs
-
-                # The input to the encoder in the first time step will be
-                # the boundary symbol, regardless if we are using teacher
-                # forcing or not.
-                # idx = [w2i[START_SYMBOL] for sublist in sentence]
-                # predicted_symbol = [w2i[START_SYMBOL] for sublist in sentence]
-                # print(torch.tensor(sentence).size())
                 predictions = encoder(sentence)
                 # print("pred: ", predictions.size())
                 # print("corr: ", torch.tensor(target_sentence).size())
@@ -314,46 +285,18 @@ if __name__ == '__main__':
                 loss += criterion(predictions.transpose(1, 2), torch.tensor(target_sentence).to(device))
 
                 sentence_length = len(sentence[0])
-                # NOTE: we use teacher forcing!
-                # for i in range(sentence_length): # only go to seq_length - 1 because target sentence is words from respective next time step
-                #     # The targets will be the ith symbol of all the target
-                #     # strings. They will also be used as inputs for the next
-                #     # time step if we use teacher forcing.
-                #     correct = [sublist[i] for sublist in target_sentence]
-                #     input_to_predict = [sublist[:i+1] for sublist in sentence]
-                #     #print(input_to_predict)
-                #
-                #     # predict the next word by all the sentence so far.
-                #     predictions = encoder(input_to_predict)
-                #     #print(predictions.size()) # B x (seq-length=1) x hidden_size
-                #     #print(torch.tensor(correct).size())
-                #     #exit()
-                #     _, predicted_tensor = predictions.topk(1)  # argmax
-                #     predicted_symbols = predicted_tensor.squeeze()
-                #     print(predicted_symbols.size())
-                #     print(torch.tensor(correct).size())
-                #     exit()
-                    # print(predicted_symbols)  # B x (seq-length=1) x hidden_size
 
-
-                    #loss += criterion(predicted_symbols, torch.tensor(correct).to(device))
-                    #print(loss)
-                    #exit()
                 loss /= (sentence_length * args.batch_size)
                 loss.backward()
                 encoder_optimizer.step()
                 print("loss: ", loss.item())
                 total_loss += loss
                 print(total_loss)
-                #exit()
             print(datetime.now().strftime("%H:%M:%S"), "Epoch", epoch, "loss:", total_loss.detach().item())
             total_loss = 0
 
-            # if epoch % 10 == 0:
-            #     print("Evaluating on the dev data...")
-            #     evaluate(dev_dataset, encoder)
 
-        # ==================== Save the model  ==================== #
+        # ==================== Saving the model  ==================== #
 
         if (args.save):
             dt = str(datetime.now()).replace(' ', '_').replace(':', '_').replace('.', '_')
@@ -393,8 +336,6 @@ if __name__ == '__main__':
     print("Number of test sentences: ", len(test_dataset))
     print()
 
-    #evaluate(test_dataset, encoder)
-
     # ==================== User interaction ==================== #
 
     while (True):
@@ -426,31 +367,3 @@ if __name__ == '__main__':
         for word in predicted_symbol:
             print(i2w[word].encode('utf-8').decode(), end=' ')
         print()
-
-
-
-        # for i in target_sentence:
-        #     print(target_i2w[i].encode('utf-8').decode(), end=' ')
-        # print()
-
-        # if use_attention:
-        #     # Construct the attention table
-        #     ap = torch.tensor(attention_probs).T
-        #     if len(ap.shape) == 1:
-        #         ap = ap.unsqueeze(0)
-        #     attention_probs = ap.tolist()
-        #
-        #     for i in range(len(attention_probs)):
-        #         for j in range(len(attention_probs[i])):
-        #             attention_probs[i][j] = "{val:.2f}".format(val=attention_probs[i][j])
-        #     for i in range(len(attention_probs)):
-        #         if i < len(text):
-        #             attention_probs[i].insert(0, source_i2w[source_sentence[i]])
-        #         else:
-        #             attention_probs[i].insert(0, ' ')
-        #     first_row = ["Source/Result"]
-        #     for w in target_sentence:
-        #         first_row.append(target_i2w[w])
-        #     attention_probs.insert(0, first_row)
-        #     t = AsciiTable(attention_probs)
-        #     print(t.table)
