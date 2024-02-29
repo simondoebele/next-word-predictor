@@ -37,7 +37,7 @@
   </p>
 </div>
 
-![WebInterface](./images/interface-screen-shot.png)
+![WebInterface](./images/interface-screen-shot.PNG)
 In the web interface, we can choose between our two different types of language models (n-gram or neural), we can type something, for which we want to see predictions, we can choose how many different words we receive as suggestions, and we can click on a suggestions so to not needing to type it.
 
 
@@ -67,8 +67,6 @@ In the web interface, we can choose between our two different types of language 
 ## About The Project
 
 In this project, we built a web interface with Dash to showcase the results of our two competing language models (one based on n-grams, the other based on RNNs). This was the final project, we proposed for the graduate course [Language Engineering](https://www.kth.se/student/kurser/kurs/DD2417?l=en) at the Royal Institute of Technology, Stockholm. The overarching purpose of the project was to improve typing speed of smartphone users using language technologies.
-
-![WebInterface](./images/interface-screen-shot.png)
 
 The presentation and article ("report") go into much more detail regarding the training setup and parameters used. As a result, we found that the n-gram performs better than the RNN (given our setup, although better data and some more hyperparameter tuning could have given the RNN the edge). We show that increasing the dataset improves the performance. But we need to be careful with overfitting. Then again, in a user setting, overfitting on user data might be a bug, not a feature.
 
